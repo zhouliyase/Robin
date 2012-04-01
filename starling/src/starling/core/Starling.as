@@ -37,9 +37,13 @@ package starling.core
     import starling.display.Stage;
     import starling.events.EventDispatcher;
     import starling.events.ResizeEvent;
+    import starling.events.StatusEvent;
     import starling.events.TouchPhase;
     import starling.events.TouchProcessor;
     
+	[Event(name="starling_start", type="starling.events.StatusEvent")]
+	[Event(name="starling_stop", type="starling.events.StatusEvent")]
+	
     /** The Starling class represents the core of the Starling framework.
      *
      *  <p>The Starling framework makes it possible to create 2D applications and games that make
@@ -323,12 +327,14 @@ package starling.core
         { 
             mStarted = true; 
             mLastFrameTimestamp = getTimer() / 1000.0; 
+			dispatchEvent(new StatusEvent(StatusEvent.START));
         }
         
         /** Stops rendering. */
         public function stop():void 
         { 
             mStarted = false; 
+			dispatchEvent(new StatusEvent(StatusEvent.STOP));
         }
         
         // event handlers

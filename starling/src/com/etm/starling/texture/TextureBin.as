@@ -2,6 +2,7 @@ package com.etm.starling.texture
 {
 	import flash.geom.Point;
 	import flash.system.ApplicationDomain;
+	import flash.utils.Dictionary;
 	
 	import starling.textures.Texture;
 	import starling.textures.TextureAtlas;
@@ -22,7 +23,11 @@ package com.etm.starling.texture
 			else
 				return pivotPoint["#global#"];
 		}
-
+		public function getTextures(prefix:String="",lables:Vector.<String>=null):Vector.<Texture>
+		{
+			return _textureAtlas.getTextures(prefix,lables);
+		}
+		
 		public function get textureAtlas():TextureAtlas
 		{
 			return _textureAtlas;
