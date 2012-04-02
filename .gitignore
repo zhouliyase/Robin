@@ -2,7 +2,7 @@
 bin-debug/
 bin-release/
 starling/doc/html/
-bin/
+bin
 # Project property files
 .actionScriptProperties
 .flexProperties
@@ -13,3 +13,5 @@ bin/
 
 # OS X folders
 .DS_Store
+
+starling/bin/
