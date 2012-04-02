@@ -13,9 +13,9 @@ package starling.display
 	import flash.display.FrameLabel;
 	import flash.errors.IllegalOperationError;
 	import flash.media.Sound;
-	
+
 	import mx.messaging.errors.NoChannelAvailableError;
-	
+
 	import starling.animation.IAnimatable;
 	import starling.events.Event;
 	import starling.textures.Texture;
@@ -193,22 +193,22 @@ package starling.display
 			{
 				currentFrame=target as int;
 			}
-			else if (target is String)
+			else if (target is String && target != "")
 			{
 				var currentname:String="";
 				var previouname:String="";
 				var prefix:String=target as String;
-				for (var i:int = 0; i < mcurrentLabels.length; i++) 
+				for (var i:int=0; i < mcurrentLabels.length; i++)
 				{
 					previouname=currentname;
 					currentname=mcurrentLabels[i];
-					if (currentname.indexOf(prefix) == 0 && previouname.indexOf(prefix)!=0)
+					if (currentname.indexOf(prefix) == 0 && previouname.indexOf(prefix) != 0)
 					{
 						mloopStart=i;
 					}
-					else if(currentname.indexOf(prefix) != 0 && previouname.indexOf(prefix)==0)
+					else if (currentname.indexOf(prefix) != 0 && previouname.indexOf(prefix) == 0)
 					{
-						mloopEnd=i-1;
+						mloopEnd=i - 1;
 						break;
 					}
 				}
@@ -397,12 +397,12 @@ package starling.display
 
 		public function get loopStart():int
 		{
-			return mloopStart==-1?0:mloopStart;
+			return mloopStart == -1 ? 0 : mloopStart;
 		}
 
 		public function get loopEnd():int
 		{
-			return mloopEnd==-1?(numFrames-1):mloopEnd;
+			return mloopEnd == -1 ? (numFrames - 1) : mloopEnd;
 		}
 
 
