@@ -4,12 +4,9 @@ bin-release/
 starling/doc/html/
 bin
 # Project property files
-.actionScriptProperties
-.flexProperties
 .settings/
 .project
 .FlexUnitSettings
-.flexLibProperties
 
 # OS X folders
 .DS_Store
