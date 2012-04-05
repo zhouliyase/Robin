@@ -182,6 +182,7 @@ package starling.display
 
 		private var mloopStart:int=-1;
 		private var mloopEnd:int=-1;
+		private var currentPlay:String;
 
 		// playback methods
 
@@ -195,9 +196,13 @@ package starling.display
 			}
 			else if (target is String && target != "")
 			{
+				var prefix:String=target as String;
+				if (prefix == currentPlay)
+					return;
+				currentPlay=prefix;
 				var currentname:String="";
 				var previouname:String="";
-				var prefix:String=target as String;
+
 				for (var i:int=0; i < mcurrentLabels.length; i++)
 				{
 					previouname=currentname;
@@ -210,6 +215,10 @@ package starling.display
 					{
 						mloopEnd=i - 1;
 						break;
+					}
+					else if (currentname.indexOf(prefix) == 0 && i == mcurrentLabels.length - 1)
+					{
+						mloopEnd=i;
 					}
 				}
 				currentFrame=mloopStart;
