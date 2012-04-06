@@ -1,5 +1,6 @@
-Robin Framework: Starling powered framework for game development
+Robin Framework
 ================================================
+Starling powered framework for game development
 
 What is Robin?
 -----------------
@@ -8,8 +9,6 @@ Robin is an ActionScript 3 library that focus on game development. It is powered
 
 Find more information?
 ------------------------------------------------
-
-Here are a few starting points:
 
 * [starling-framework](http://www.starling-framework.org)
 * [polygonal-ds](http://lab.polygonal.de/)
