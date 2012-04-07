@@ -221,7 +221,7 @@ package starling.display
 						mloopEnd=i;
 					}
 				}
-				currentFrame=mloopStart;
+				currentFrame=loopStart;
 			}
 		}
 
