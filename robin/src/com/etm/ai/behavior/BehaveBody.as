@@ -14,9 +14,9 @@ package com.etm.ai.behavior
 		private var _wanderRange:Number=1;
 		private var _pathIndex:int=0;
 		private var _pathThreshold:Number=20;
-		private var _avoidDistance:Number=200;
-		private var _avoidBuffer:Number=20;
-		private var _inSightDist:Number=200;
+		private var _avoidDistance:Number=100;
+		private var _avoidBuffer:Number=40;
+		private var _inSightDist:Number=100;
 		private var _tooCloseDist:Number=60;
 
 		public function BehaveBody()

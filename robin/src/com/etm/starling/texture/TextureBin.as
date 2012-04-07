@@ -1,6 +1,14 @@
 package com.etm.starling.texture
 {
+	import avmplus.getQualifiedClassName;
+	
+	import flash.display.BitmapData;
+	import flash.display.Loader;
+	import flash.display.LoaderInfo;
+	import flash.filters.BitmapFilter;
+	import flash.geom.ColorTransform;
 	import flash.geom.Point;
+	import flash.geom.Rectangle;
 	import flash.system.ApplicationDomain;
 	import flash.utils.Dictionary;
 	
@@ -9,28 +17,73 @@ package com.etm.starling.texture
 
 	public class TextureBin
 	{
-		private var _textureAtlas:TextureAtlas;
-		private var pivotPoint:Object;
-		public function TextureBin(obj:Object)
+		private var pivotPoint:Point;
+		private var origin:BitmapData;
+		private var processedTextrueAtlas:Dictionary;
+		private var config:XML;
+		public function TextureBin(li:LoaderInfo)
 		{
-			_textureAtlas=new TextureAtlas(Texture.fromBitmapData(obj.texture),obj.config);
-			pivotPoint=obj.registers;
+			var content:Object=li.content;
+			origin=content.texture.clone();
+			pivotPoint=new Point(content.px,content.py);
+			config=new XML(content.config);
+			processedTextrueAtlas=new Dictionary();
+			li.loader.unloadAndStop();
 		}
-		public function getPivotPoint(prefix:String=""):Point
+		public function getPivotPoint():Point
 		{
-			if(pivotPoint[prefix])
-				return pivotPoint[prefix];
-			else
-				return pivotPoint["#global#"];
+			return pivotPoint;
+		}
+		public function dispose():void
+		{
+			origin.dispose();
+			origin=null;
 		}
 		public function getTextures(prefix:String="",lables:Vector.<String>=null):Vector.<Texture>
 		{
-			return _textureAtlas.getTextures(prefix,lables);
+			var ta:TextureAtlas=processedTextrueAtlas["origin"];
+			if(ta)
+				return ta.getTextures(prefix,lables);
+			if(!origin)
+				throw new Error("The original source is disposed.");
+			var o:BitmapData=origin.clone();
+			ta=new TextureAtlas(Texture.fromBitmapData(o),config);
+			processedTextrueAtlas["origin"]=ta;
+			return ta.getTextures(prefix,lables);
 		}
-		
-		public function get textureAtlas():TextureAtlas
+		public function getColorTransformTextures(colorTransform:ColorTransform,prefix:String="",lables:Vector.<String>=null,cache:Boolean=true):Vector.<Texture>
 		{
-			return _textureAtlas;
+			trace(colorTransform.toString());
+			var ta:TextureAtlas=processedTextrueAtlas[colorTransform.toString()];
+			if(ta)
+				return ta.getTextures(prefix,lables);
+			
+			if(!origin)
+				throw new Error("The original source is disposed.");
+			var color:BitmapData=origin.clone();
+			color.colorTransform(color.rect,colorTransform);
+			ta=new TextureAtlas(Texture.fromBitmapData(color),config);
+			if(cache)
+				processedTextrueAtlas[colorTransform.toString()]=ta;
+			return ta.getTextures(prefix,lables);
+		}
+		//TODO not tested
+		public function getFilterTextures(filter:BitmapFilter,prefix:String="",lables:Vector.<String>=null,cache:Boolean=true):Vector.<Texture>
+		{
+			var type:String=getQualifiedClassName(filter);
+			var ta:TextureAtlas=processedTextrueAtlas[type];
+			if(ta)
+				return ta.getTextures(prefix,lables);
+			
+			if(!origin)
+				throw new Error("The original source is disposed.");
+			var bfrect:Rectangle=origin.generateFilterRect(origin.rect,filter);
+			var bf:BitmapData=new BitmapData(bfrect.width,bfrect.height);
+			bf.applyFilter(origin,origin.rect,new Point(-bfrect.x,-bfrect.y),filter);
+			ta=new TextureAtlas(Texture.fromBitmapData(bf),config);
+			if(cache)
+				processedTextrueAtlas[type]=ta;
+			return ta.getTextures(prefix,lables);
 		}
 	}
 }
