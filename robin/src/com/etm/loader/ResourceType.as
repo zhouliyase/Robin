@@ -8,5 +8,6 @@ package com.etm.loader
 		public static const JSON_DATA_FORMAT:String="json";
 		public static const BINARY_DATA_FORMAT:String="binary";
 		public static const ASSET_FORMAT:String="asset";
+		public static const STREAM_FORMAT:String="stream";
 	}
 }

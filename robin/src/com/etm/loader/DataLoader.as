@@ -1,11 +1,12 @@
 package com.etm.loader
 {
 	import com.etm.utils.Debug;
-
+	
 	import flash.events.Event;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
+	import flash.utils.ByteArray;
 
 	/**
 	 *加载数据文件，包括text，xml，bytearray
@@ -36,6 +37,14 @@ package com.etm.loader
 					break;
 			}
 			addLoaderEventListeners(_loader);
+		}
+		override public function dispose():void
+		{
+			if(_dataFormat==ResourceType.BINARY_DATA_FORMAT)
+			{
+				(_loader.data as ByteArray).clear();
+			}
+			_loader.data=null;
 		}
 
 		protected var _loader:URLLoader;

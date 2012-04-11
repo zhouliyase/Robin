@@ -5,15 +5,18 @@ package com.etm.net.manager
 	import com.etm.utils.Debug;
 	import com.etm.utils.Util;
 	
+	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.net.Socket;
+	import flash.system.Security;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 
+	//TODO split to event
 
 	/**
 	 * socket连接器
@@ -35,7 +38,7 @@ package com.etm.net.manager
 			var server:String=Config.getConfig(Config.SERVER_ADDRESS_CFG);
 			host=server.split(":")[0];
 			port=server.split(":")[1];
-			_server=new Socket(host, port);
+			_server=new Socket();
 			_server.addEventListener(Event.CONNECT, onConnection);
 			_server.addEventListener(Event.CLOSE, onClose);
 			_server.addEventListener(IOErrorEvent.IO_ERROR, onError);
@@ -48,6 +51,7 @@ package com.etm.net.manager
 		private var _len:uint=0;
 		private var _package:ByteArray;
 
+		//process incoming data
 		private function onStreamIn(event:ProgressEvent):void
 		{
 			if (_len == 0)
@@ -62,42 +66,69 @@ package com.etm.net.manager
 			else
 				processPackage();
 		}
-
+		//process package
 		private function processPackage():void
 		{
 			if (_server.bytesAvailable == 0)
 			{
 				return;
 			}
-			// Load the data
-			if (_package.length < _len && _server.bytesAvailable > 0)
+			var type:int=-1;
+			try
 			{
-				var l:uint=_server.bytesAvailable;
-				if (l > _len - _package.length)
+				// Load the data
+				if (_package.length < _len && _server.bytesAvailable > 0)
 				{
-					l=_len - _package.length;
+					var l:uint=_server.bytesAvailable;
+					if (l > _len - _package.length)
+					{
+						l=_len - _package.length;
+					}
+					_server.readBytes(_package, _package.length, l);
 				}
-				_server.readBytes(_package, _package.length, l);
+				// Check if we have all the data
+				if (_len != 0 && _package.length == _len)
+				{
+					// Parse the bytes and send them for handeling to the core
+					type=_package.readByte();
+					var result:Object=_package.readObject();
+					switch (type)
+					{
+						case Config.LOG_IN_SUCCESS:
+							onLoginSuccess(result);
+							break;
+						case Config.LOG_IN_FAILURE:
+							onLoginFailure(result);
+							break;
+						case Config.NETWORK_MESSAGE:
+							onSession(result);
+							break;
+					}
+					// Clear the old data
+					_len=0;
+					type=-1;
+					_package=null;
+				}
 			}
-
-			// Check if we have all the data
-			if (_len != 0 && _package.length == _len)
+			catch(e:Error)
 			{
-				// Parse the bytes and send them for handeling to the core
-				var type:int=_package.readByte();
-				var result:Object=_package.readObject();
-				switch (type)
+				if(type!=-1)
 				{
-					case Config.LOG_IN:
-						onLogin(result);
-						break;
-					case Config.SESSION_MESSAGE:
-						onSession(result);
-						break;
+					switch (type)
+					{
+						case Config.LOG_IN_SUCCESS:
+						case Config.LOG_IN_FAILURE:
+							onLoginFailure(result);
+							break;
+						case Config.NETWORK_MESSAGE:
+							Debug.error("Sesion message error:"+e.message,this);
+							break;
+					}
 				}
-				// Clear the old data
-				_len=0;
-				_package=null;
+				else
+				{
+					Debug.error("Can't parse package."+e.message,this);
+				}
 			}
 
 			// Check if there is another package
@@ -108,10 +139,30 @@ package com.etm.net.manager
 				processPackage();
 			}
 		}
-
+		
+		private function onLoginSuccess(result:Object):void
+		{
+			Config.systemTime=result.timestamp;
+			Config.setConfig(Config.TOKEN_CFG,result.token);	
+			isLogin=true;
+			Debug.info("Login success",this);
+			dispatchEvent(new SocketEvent(SocketEvent.LOGIN, result));
+			sendUnhandleMsg();
+		}
+		
+		private function onLoginFailure(result:Object):void
+		{
+			isLogin=false;
+			Debug.error("Login error: {0}",this,result);
+			dispatchEvent(new SocketEvent(SocketEvent.LOGIN_ERROR, result));
+		}
+		
+		
+		
+		//handler session message
 		private function onSession(result:Object):void
 		{
-			var handlers:Array=_registerQueue[result.id];
+			var handlers:Array=_registerQueue[result.data.id];
 			if (handlers)
 			{
 				if (result.code == 200)
@@ -130,25 +181,20 @@ package com.etm.net.manager
 			}
 			dispatchEvent(new SocketEvent(SocketEvent.SESSION_MESSAGE, result));
 		}
-
-		private function onLogin(result:Object):void
+		
+		
+		private function onError(event:ErrorEvent):void
 		{
-			isLogin=true;
-			dispatchEvent(new SocketEvent(SocketEvent.LOGIN, result));
-			sendUnhandleMsg();
-		}
-
-		private function onError(event:IOErrorEvent):void
-		{
-			// TODO Auto-generated method stub
-
+			isLogin=false;
+			Debug.error(event.text,this);
+			dispatchEvent(new SocketEvent(SocketEvent.CONNECTION_LOST,{msg:"Can't connect to the server."}));
 		}
 
 		private function onClose(event:Event):void
 		{
 			isLogin=false;
-			dispatchEvent(new SocketEvent(SocketEvent.CONNECTION_LOST));
-
+			Debug.info("Connection closed",this);
+			dispatchEvent(new SocketEvent(SocketEvent.CONNECTION_LOST,{msg:"Connection closed."}));
 		}
 		/**
 		 * 服务地址
@@ -188,12 +234,16 @@ package com.etm.net.manager
 		}
 
 		/**
-		 *发送 socket请求
-		 *
-		 */
+		 *发送一个socket请求 
+		 * @param type 请求类型
+		 * @param params 请求参数
+		 * @param successHandler 成功处理函数
+		 * @param failHandler 失败处理函数
+		 * 
+		 */		
 		public function send(type:int, params:Object, successHandler:Function, failHandler:Function):void
 		{
-			var id:uint=Util.messageId;
+			var id:Number=Util.messageId;
 			params.id=id;
 			_registerQueue[id]=[successHandler, failHandler];
 			var msg:ByteArray=new ByteArray();
@@ -207,7 +257,15 @@ package com.etm.net.manager
 				unSendMessage.push([type, msg]);
 			}
 		}
-
+		public function registerMessage(id:int,successHandler:Function, failHandler:Function):void
+		{
+			_registerQueue[id]=[successHandler, failHandler];
+		}
+		/**
+		 *登录操作 
+		 * @param params 登陆参数
+		 * 
+		 */		
 		public function login(params:Object):void
 		{
 			if (isLogin)
@@ -226,15 +284,16 @@ package com.etm.net.manager
 				loginData=msg;
 			}
 		}
+		
+		//login later when server is connected		
 		private var loginData:ByteArray;
-
 		private function loginLater():void
 		{
 			doSend(Config.LOG_IN, loginData);
 		}
 
-
-		protected function onConnection(event:Event):void
+		//connect server success
+		private function onConnection(event:Event):void
 		{
 			isConnecting=false;
 			dispatchEvent(new SocketEvent(SocketEvent.CONNECTION));
@@ -251,7 +310,7 @@ package com.etm.net.manager
 			_server.writeBytes(body, 0, body.length);
 			_server.flush();
 		}
-
+		//send cached message
 		private function sendUnhandleMsg():void
 		{
 			while (unSendMessage.length != 0 && connected)

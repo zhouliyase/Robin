@@ -2,6 +2,10 @@ package com.etm.loader
 {
 	import com.etm.core.Config;
 	import com.etm.tasks.ParallelTask;
+	import com.etm.tasks.TaskEvent;
+	import com.etm.utils.Debug;
+	
+	import flash.events.Event;
 	import flash.utils.Dictionary;
 
 	public class QLoader extends ParallelTask
@@ -23,10 +27,11 @@ package com.etm.loader
 		{
 			super(bandWidth, 0, 999999, retryCount);
 			_queues=new Dictionary();
+			_idIndex=new Dictionary(true);
 		}
 
 		private var _queues:Dictionary;
-
+		private var _idIndex:Dictionary;
 		/**
 		 *增加一个加载项
 		 * @param url 加载地址
@@ -67,7 +72,7 @@ package com.etm.loader
 			switch (type)
 			{
 				case ResourceType.ASSET_FORMAT:
-					if (param)
+					if (param&&param.context)
 						loader=new AssetsLoader(url, param.context);
 					else
 						loader=new AssetsLoader(url);
@@ -78,10 +83,15 @@ package com.etm.loader
 				case ResourceType.XML_DATA_FORMAT:
 					loader=new DataLoader(url, type);
 					break;
+				case ResourceType.STREAM_FORMAT:
+					loader=new StreamLoader(url);
+					break;
 			}
 			loader.preventCache=!cache;
 			enqueue(loader);
 			_queues[url]=loader;
+			if (param&&param.id)
+				_idIndex[param.id]=loader;
 			return loader;
 		}
 
@@ -94,10 +104,26 @@ package com.etm.loader
 		public function getContent(url:String):Object
 		{
 			var loader:AbstractLoader=_queues[url];
-			if (loader)
+			if (loader.isCompleted)
 				return loader.content;
 			else
 				return null;
+		}
+		public function getItemLoader(url:String):AbstractLoader
+		{
+			return _queues[url];
+		}
+		public function getContentById(id:String):Object
+		{
+			var loader:AbstractLoader=_idIndex[id];
+			if (loader.isCompleted)
+				return loader.content;
+			else
+				return null;
+		}
+		public function getItemLoaderById(id:String):AbstractLoader
+		{
+			return _idIndex[id];
 		}
 
 		/**
@@ -108,7 +134,35 @@ package com.etm.loader
 		{
 			execute();
 		}
-
+		public function loadFromConfig(url:String):void
+		{
+			var configLoader:DataLoader=new DataLoader(url,ResourceType.XML_DATA_FORMAT);
+			configLoader.addEventListener(TaskEvent.TASK_COMPLETE,onParseConfig);
+			configLoader.addEventListener(TaskEvent.TASK_ERROR,onLoadConfigError);
+			configLoader.load();
+		}
+		
+		private function onParseConfig(event:TaskEvent):void
+		{
+			var cl:DataLoader=event.task as DataLoader;
+			var band:int=parseInt(cl.content.numConnections);
+			var isLazy:Boolean=Boolean(cl.content.lazy);
+			Config.setConfig("webbase",cl.content.webbase.toString());
+			for each(var file:XML in cl.content.files)
+			{
+				var item:AbstractLoader=add(file.url,file.type?file.type:"auto",Boolean(file.preventCache));
+				item.retryCount=parseInt(file.maxTries);
+			}
+			if(!isLazy)
+				start();
+		}
+		
+		private function onLoadConfigError(event:TaskEvent):void
+		{
+			Debug.warn("Can't load load config file.");
+			notifyError(event.task);
+		}
+		
 
 		private function autoMatch(url:String):String
 		{

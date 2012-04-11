@@ -18,20 +18,26 @@ package com.etm.core
 	 * */
 	public class Config
 	{
+		//config name
 		public static const SECRET_KEY_CFG:String="secret_key";
 		public static const CONSUMER_KEY_CFG:String="consumer_Key";
 		public static const AUTH_METHOD_CFG:String="authMethod";
 		public static const AUTH_VERSION_CFG:String="authVersion";
-
-
 		public static const GATEWAY_CFG:String="gateway";
 		public static const SERVER_ADDRESS_CFG:String="server_address";
-
-		public static const SESSION_MESSAGE:int=0x33;
+		public static const TOKEN_CFG:String="token";
+		
+		
+		//game event
 		public static const LOG_IN:int=0x11;
-
-		public static const SESSION_ID:String="session_id";
-
+		public static const LOG_IN_SUCCESS:int = 0x14;
+		public static const LOG_IN_FAILURE:int = 0x15;
+		public static const LOG_OUT:int = 0x17;
+		public static const LOG_OUT_SUCCESS:int = 0x18;
+		public static const LOG_OUT_FAILURE:int = 0x19;
+		public static const SESSION_MESSAGE:int=0x33;
+		public static const NETWORK_MESSAGE:int = 0x34;
+		
 
 
 		private static var local:Dictionary=new Dictionary();

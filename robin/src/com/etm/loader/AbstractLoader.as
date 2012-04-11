@@ -41,6 +41,13 @@ package com.etm.loader
 		{
 			execute();
 		}
+		/**
+		 *清除 
+		 */		
+		public function dispose():void
+		{
+			
+		}
 
 		/**
 		 * 请求地址

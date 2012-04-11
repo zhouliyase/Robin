@@ -3,6 +3,7 @@
   <includeClasses>
     <classEntry path="com.etm.utils.AngleUtil"/>
     <classEntry path="com.etm.utils.DigitalUtil"/>
+    <classEntry path="com.etm.loader.StreamLoader"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

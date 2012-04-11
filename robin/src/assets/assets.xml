@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assets>
+    <numConnections>3</numConnections>
+    <webbase></webbase>
+    <lazy>true</lazy>
+    <files>
+    <!--template
+        <file>
+            <url></url>
+            <id></id>
+            <maxTries>0</maxTries>
+            <type>[text,xml,json,binary,asset,stream]</type>
+            <preventCache>false</preventCache>
+        </file>
+    -->
+    </files>
+</assets>

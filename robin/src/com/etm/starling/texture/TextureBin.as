@@ -21,14 +21,12 @@ package com.etm.starling.texture
 		private var origin:BitmapData;
 		private var processedTextrueAtlas:Dictionary;
 		private var config:XML;
-		public function TextureBin(li:LoaderInfo)
+		public function TextureBin(content:Object)
 		{
-			var content:Object=li.content;
 			origin=content.texture.clone();
-			pivotPoint=new Point(content.px,content.py);
 			config=new XML(content.config);
+			pivotPoint=new Point(parseInt(config.@pivotX),parseInt(config.@pivotY));
 			processedTextrueAtlas=new Dictionary();
-			li.loader.unloadAndStop();
 		}
 		public function getPivotPoint():Point
 		{
@@ -53,7 +51,6 @@ package com.etm.starling.texture
 		}
 		public function getColorTransformTextures(colorTransform:ColorTransform,prefix:String="",lables:Vector.<String>=null,cache:Boolean=true):Vector.<Texture>
 		{
-			trace(colorTransform.toString());
 			var ta:TextureAtlas=processedTextrueAtlas[colorTransform.toString()];
 			if(ta)
 				return ta.getTextures(prefix,lables);

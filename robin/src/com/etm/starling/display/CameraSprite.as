@@ -224,6 +224,7 @@ package com.etm.starling.display
 				_world.y=_targetY;
 				_harness.scaleX=_harness.scaleY=_targetZoom;
 				_harness.setRotation(_targetRot);
+				dispatchEvent(new CameraUpdateEvent(this.viewport));
 			}
 			else
 			{
@@ -259,8 +260,8 @@ package com.etm.starling.display
 		private function stepAnimation(e:EnterFrameEvent):void
 		{
 			var ease:Function=Transitions.getTransition(Transitions.EASYEASE);
-			_world.x=DigitalUtil.clamp(_world.x + ease(_world.x, _targetX, _easingPan), _boundingRect.left, _boundingRect.right);
-			_world.y=DigitalUtil.clamp(_world.y + ease(_world.y, _targetY, _easingPan), _boundingRect.top, _boundingRect.bottom);
+			_world.x=DigitalUtil.clamp(_world.x + ease(_world.x, _targetX, _easingPan),Math.min(-_boundingRect.left,-_boundingRect.right),Math.max(-_boundingRect.left,-_boundingRect.right));
+			_world.y=DigitalUtil.clamp(_world.y + ease(_world.y, _targetY, _easingPan), Math.min(-_boundingRect.top, -_boundingRect.bottom),Math.max(-_boundingRect.top, -_boundingRect.bottom));
 			_harness.scaleX=_harness.scaleY=_harness.scaleX + ease(_harness.scaleX, _targetZoom, _easingZoom);
 			_targetRot=AngleUtil.angleModulus(_targetRot, _harness.getRotation());
 			_harness.setRotation(_harness.getRotation() + ease(_harness.getRotation(), _targetRot, _easingRotate));

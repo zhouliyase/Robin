@@ -37,7 +37,6 @@ package com.etm.net.connector
 		protected var _commandName:String;
 		protected var _msgId:uint;
 		protected var _serverAdress:String;
-		protected var _method:String;
 
 		protected var _data:Object;
 
@@ -71,7 +70,7 @@ package com.etm.net.connector
 
 		protected function get destination():String
 		{
-			return _serverAdress + _commandName;
+			return _serverAdress;
 		}
 	}
 }

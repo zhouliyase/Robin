@@ -19,7 +19,6 @@ package com.etm.net.connector
 		 */
 		public function SocketConnector(command_name:String, command_args:Object=null, retryCount:int=0)
 		{
-			_method="socket";
 			_serverAdress=SocketManager.instance.host;
 			super(command_name, command_args, retryCount);
 		}
@@ -29,17 +28,14 @@ package com.etm.net.connector
 		{
 			super.doExecute();
 			SocketManager.instance.send(Config.SESSION_MESSAGE, _commandArgs, onCompleteHandler, onErrorHandler);
-			Debug.info("Send SFS request to {0},params is {1}", this, _commandName, _commandArgs);
+			Debug.info("Send socket request {0} to {1}", this, _commandArgs,destination );
 		}
 
 		protected function onCompleteHandler(result:Object):void
 		{
-			Debug.info("Get SFS response from {0},result is {1}", this, _commandName, result);
+			Debug.info("Get socket response {0} from {1}", this, result,destination );
 			_data=result;
-			if (_data.code == 200)
-				notifyComplete(this);
-			else
-				notifyError(this);
+			notifyComplete(this);
 		}
 
 
@@ -48,7 +44,7 @@ package com.etm.net.connector
 		 */
 		protected function onErrorHandler(fault:Object):void
 		{
-			Debug.error("Get SFS error from {0},error is {1}", this, _commandName, fault);
+			Debug.info("Get socket error {0} from {1}", this, fault,destination );
 			notifyError(this);
 		}
 

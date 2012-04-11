@@ -36,7 +36,6 @@ package com.etm.net.connector
 		public function RESTConnector(command_name:String, command_args:Object, gateway:String, retryCount:int=0)
 		{
 			_serverAdress=gateway;
-			_method="http";
 			_request=new URLRequest(_serverAdress);
 			super(command_name, command_args, retryCount);
 			attachHeader();
@@ -55,7 +54,7 @@ package com.etm.net.connector
 
 		private function attachHeader():void
 		{
-			_request.requestHeaders.push(new URLRequestHeader("Authorization", Util.generateHeader(_commandArgs, Config.getConfig(Config.SESSION_ID))));
+			_request.requestHeaders.push(new URLRequestHeader("Authorization", Util.generateHeader(_commandArgs, Config.getConfig(Config.TOKEN_CFG))));
 		}
 
 		override protected function clear():void
@@ -86,18 +85,20 @@ package com.etm.net.connector
 			{
 				result=_urlLoader.data as ByteArray;
 				_data=result.readObject();
-				Debug.info("Get REST response {0} from {1}", this, result, destination);
+				Debug.info("Get REST response {0} from {1}", this, _data, destination);
 				if (_data.code == 200)
 				{
 					notifyComplete(this);
 				}
 				else
 				{
+					Debug.info("Get REST error {0} from {1}", this, _data.info, destination);
 					notifyError(this);
 				}
 			}
 			catch (e:Error)
 			{
+				Debug.error("Get REST error {0} from {1}", this, e.message, destination);
 				notifyError(this);
 			}
 		}

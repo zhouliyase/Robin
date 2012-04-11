@@ -31,7 +31,6 @@ package com.etm.net.connector
 		public function AMFConnector(command_name:String, command_args:Object, gateway:String, retryCount:int=0)
 		{
 			_serverAdress=gateway;
-			_method="http";
 			super(command_name, command_args, retryCount);
 			attachHeader();
 		}
@@ -70,7 +69,7 @@ package com.etm.net.connector
 
 		private function attachHeader():void
 		{
-			_netConnection.addHeader("Authorization", false, Util.generateHeader(_commandArgs, Config.getConfig(Config.SESSION_ID)));
+			_netConnection.addHeader("Authorization", false, Util.generateHeader(_commandArgs, Config.getConfig(Config.TOKEN_CFG)));
 		}
 
 		private function addListeners():void

@@ -5,25 +5,33 @@ package com.etm.utils
 	import com.adobe.crypto.SHA1;
 	import com.etm.core.Config;
 	import com.etm.utils.objectencoder.ObjectEncoder;
-
+	
 	import flash.utils.ByteArray;
 
 	public class Util
 	{
-		private static var uniqueId:uint=0;
+		private static var uniqueId:Number=101;
 
-		public static function get messageId():uint
+		public static function get messageId():Number
 		{
+			if(uniqueId==Number.MAX_VALUE)
+				uniqueId=101;
 			return uniqueId++;
 		}
-
+		/**
+		 *生成验证头 
+		 * @param params 请求参数
+		 * @param token 请求token
+		 * @return 请求头
+		 * 
+		 */		
 		public static function generateHeader(params:Object, token:String=""):String
 		{
 			var headerString:String="";
 			var timeStamp:int=int(Config.systemTime / 1000);
 			var oauth:Object=
 				{oauth_version: Config.getConfig(Config.AUTH_VERSION_CFG), oauth_signature_method: Config.getConfig(Config.AUTH_METHOD_CFG),
-					 oauth_consumer_key: Config.getConfig(Config.CONSUMER_KEY_CFG), oauth_timestamp: timeStamp, oauth_nonce: Math.random(), oauth_token: token};
+					 oauth_consumer_key: Config.getConfig(Config.CONSUMER_KEY_CFG), oauth_timestamp: timeStamp.toString(), oauth_nonce: Math.random().toString(), oauth_token: token};
 			var temp:Array=[];
 			var key:String="";
 			for (key in oauth)
@@ -45,13 +53,14 @@ package com.etm.utils
 			var base:String=encodeURIComponent(authString);
 			if (paramString)
 				base+=('&' + encodeURIComponent(paramString));
-			Debug.info("Authorization Base String:" + base);
+//			Debug.info("Authorization Base String:" + base);
 			var signature:String=HMAC.hashToBase64(Config.getConfig(Config.SECRET_KEY_CFG), base, SHA1);
 			oauth.oauth_signature=signature;
 			headerString=JSON.stringify(oauth);
 			return headerString;
 		}
 
+		
 		public static function compressTextData(data:String):ByteArray
 		{
 			var bytes:ByteArray=new ByteArray();
