@@ -4,6 +4,9 @@
     <classEntry path="com.etm.utils.AngleUtil"/>
     <classEntry path="com.etm.utils.DigitalUtil"/>
     <classEntry path="com.etm.loader.StreamLoader"/>
+    <classEntry path="com.etm.starling.display.GridImage"/>
+    <classEntry path="com.etm.starling.display.LazyStreamImage"/>
+    <classEntry path="com.etm.event.ProgressiveEvent"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

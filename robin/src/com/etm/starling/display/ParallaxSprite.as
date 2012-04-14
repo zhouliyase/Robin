@@ -2,13 +2,15 @@ package com.etm.starling.display
 {
 
 	import com.etm.utils.*;
-
+	
+	import de.polygonal.ds.Array2;
+	
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.utils.*;
-
+	
 	import spark.primitives.Rect;
-
+	
 	import starling.display.DisplayObject;
 	import starling.display.Image;
 	import starling.display.Sprite;
@@ -118,6 +120,18 @@ package com.etm.starling.display
 				tile.tileHeight);
 			_planes[tile]=pd;
 		}
+		
+		public function addGridable(grid:Array2,grid_width:int,grid_height:int,speedRatio:Number=0, boundingRect:Rectangle=null, textureOffset:Point=null):void
+		{
+			
+			if (!textureOffset)
+				textureOffset=new Point();
+			var gridImage:GridImage=new GridImage(grid,grid_width,grid_height,_viewport,boundingRect,textureOffset);
+			super.addChildAt(gridImage, this.numChildren);
+			var pd:PlaneData=
+				new PlaneData(gridImage,speedRatio);
+			_planes[gridImage]=pd;
+		}
 
 		/**
 		 * updates each plane according to the plane type to show the areas that is visible within the viewport.
@@ -176,6 +190,14 @@ package com.etm.starling.display
 						stImg.x=parallax.x;
 						stImg.y=parallax.y;
 						stImg.show(_viewport);
+						break;
+					case "GridImage":
+						parallax.x=DigitalUtil.interpolate(center.x, 0, parallax.x);
+						parallax.y=DigitalUtil.interpolate(center.y, 0, parallax.y);
+						var gImg:GridImage=img as GridImage;
+						gImg.x=parallax.x;
+						gImg.y=parallax.y;
+						gImg.show(_viewport);
 						break;
 				}
 			}
